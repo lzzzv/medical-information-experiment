@@ -77,6 +77,7 @@ namespace 醫資實驗期末報告
         {
             string 使用者輸入帳號 = textBox1.Text.Trim();
             string 使用者輸入密碼 = textBox2.Text.Trim();
+            // 管理者帳號密碼（課堂作業，直接寫在程式內）
             string 帳號 = "admin";
             string 密碼 = "1234";
 

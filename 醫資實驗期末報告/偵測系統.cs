@@ -122,6 +122,7 @@ namespace 醫資實驗期末報告
             decode1();
             displayG1();       
         }
+        // FIR 濾波：濾波係數 m_a1 與最近的取樣值做加權總和
         private double FIRfiltering1(double[] raw1)
         {
             double filtered1 = 0.0;
@@ -293,20 +294,21 @@ namespace 醫資實驗期末報告
             byte[] tempBuf = new byte[bytesAvailable];
             serialPortR.Read(tempBuf, 0, bytesAvailable);
 
-            // BP
+            // 依目前進行中的量測項目，把收到的資料放進對應的緩衝區
+            // 血壓
             if (!button2.Enabled)
             {
                 raw.AddRange(tempBuf);
             }
 
-            // SpO2
+            // 血氧
             if (!btnSpO2開始.Enabled)
             {
                 rawSpO2.AddRange(tempBuf);
                 iEndSpO2 = rawSpO2.Count;
             }
 
-            // ECG
+            // 心電圖
             if (!btnECG開始.Enabled)
             {
                 raw1.AddRange(tempBuf);
@@ -329,6 +331,7 @@ namespace 醫資實驗期末報告
             lbl舒張壓.Text = "";
             
         }
+        // 畫血壓波形
         public void displayG()
         {
             iE = bp.Count;
@@ -351,6 +354,7 @@ namespace 醫資實驗期末報告
         {
             getAllPorts();
         }
+        // 列出電腦上可用的序列埠
         private void getAllPorts()
         {
             comboBox1.Items.Clear();
@@ -376,7 +380,6 @@ namespace 醫資實驗期末報告
         {
             g.Clear(Color.White);
             picPressure.Image = bmp;
-            //
             iStart = 0;
             iEnd = -1;
             iS = 0;
@@ -398,7 +401,6 @@ namespace 醫資實驗期末報告
             btn開始測量.Enabled = true;
             bBP = false;
             myPen = pR;
-            //
             bBP ^= true;
             if (bBP)
             {
@@ -416,6 +418,7 @@ namespace 醫資實驗期末報告
                 button4.Enabled = true;
             }
         }
+        // 解析血壓計封包（0xFF 0xF4 開頭）：即時壓力值、量測結束訊號、收縮壓與舒張壓
         public void decode_display()
         {
             if (raw.Count - iEnd < 8)
@@ -462,6 +465,7 @@ namespace 醫資實驗期末報告
             }
             txtBxRx.Text = res.ToString();
         }
+        // 解析血氧封包：0xFF 0xF3 為脈搏波、心率、血氧，0xFF 0xE2 為體溫
         public void displaySpO2()
         {
             iEndSpO2 = rawSpO2.Count;
@@ -495,6 +499,7 @@ namespace 醫資實驗期末報告
             Application.DoEvents();
         }
 
+        // 畫脈搏波形，每畫完一輪依目前的最大最小值重新縮放
         public void displayGSpO2()
         {
             iESpO2 = PulseWaveSpO2.Count;
@@ -569,7 +574,7 @@ namespace 醫資實驗期末報告
             picPressure.Width = 742;
             picPressure.Height = 352;
             pnl包含.Visible = false;
-            //BP
+            // 血壓繪圖初始化
             picSpO2.Width = 742;
             picSpO2.Height = 352;
             txtBxRx.Visible = false;
@@ -588,7 +593,7 @@ namespace 醫資實驗期末報告
             sbR = new SolidBrush(Color.Red);
             sbB = new SolidBrush(Color.Blue);
             iPen = 0;
-            //SpO2
+            // 血氧繪圖初始化
             rawSpO2 = new List<byte>();
             PulseWaveSpO2 = new List<byte>();
             HRSpO2 = new List<byte>();
@@ -605,7 +610,7 @@ namespace 醫資實驗期末報告
             sbWSpO2 = new SolidBrush(Color.White);
             sbRSpO2 = new SolidBrush(Color.Red);
             iPenSpO2 = 0;
-            //ECG
+            // 心電圖繪圖初始化
             raw1 = new List<byte>();
             Ltemp1 = new List<int>();
             Lecg1 = new List<int>();
@@ -627,6 +632,7 @@ namespace 醫資實驗期末報告
             scaleH1 = (hh1 - 2.0f * dH1) / (imx1 - imn1);
             stopWatch1 = new Stopwatch();
         }
+        // 畫出 I、II、V 三個導程的心電圖，畫到右邊界後換顏色從頭開始
         private void displayG1()
         {
             iE1 = Lecg1.Count;
@@ -665,6 +671,8 @@ namespace 醫資實驗期末報告
             pictureBox2.Image = bmpII1;
             pictureBox3.Image = bmpV1;
         }
+        // 解析心電圖封包（0xFF 0xE2 開頭，每包 15 bytes）：
+        // 三個導程經 FIR 濾波後存入 Lecg1，並讀出心率與兩組體溫
         private void decode1()
         {
             int ecgCNT1 = 0;

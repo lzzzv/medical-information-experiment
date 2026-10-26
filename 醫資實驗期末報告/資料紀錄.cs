@@ -24,6 +24,7 @@ namespace 醫資實驗期末報告
             InitializeComponent();
           
             string 新資料 = $"時間:{時間} 姓名:{姓名} 科系:{科系} 學號:{學號} 收縮壓:{收縮壓} 舒張壓:{舒張壓}\r\n 血氧:{血氧} 心率:{心率} 體溫:{溫度}\r\n";
+            // 新的量測結果附加到 data.txt 保存
             textBox1.AppendText(新資料);
             File.AppendAllText("data.txt", 新資料);
         }
